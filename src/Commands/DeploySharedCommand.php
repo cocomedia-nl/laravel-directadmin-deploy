@@ -23,7 +23,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
      */
     public function handle(): int
     {
-        $this->info('🚀 Starting DirectAdmin deployment...');
+        $this->info('🚀 Starting Hostinger deployment...');
 
         // Validate configuration
         if (! $this->validateConfiguration()) {
@@ -436,7 +436,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
             if (! $keyExists && $this->githubAPI && $repoInfo) {
                 try {
                     $this->info('🔑 Attempting to add deploy key via API...');
-                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'DirectAdmin Server', false);
+                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'Hostinger Server', false);
                     $this->info('✅ Deploy key added successfully via API');
                     // Retry deployment
                     $this->info('🔄 Retrying deployment...');
@@ -471,7 +471,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
                 $this->line('');
                 $this->warn('   Steps:');
                 $this->line('   1. Click "Add deploy key"');
-                $this->line('   2. Give it a title (e.g., "DirectAdmin Server")');
+                $this->line('   2. Give it a title (e.g., "Hostinger Server")');
                 $this->line('   3. Paste the public key below');
                 $this->line('   4. ✅ Check "Allow write access" (optional, for deployments)');
                 $this->line('   5. Click "Add key"');
@@ -708,9 +708,9 @@ class DeploySharedCommand extends BaseDirectAdminCommand
             $remoteBuildPath = "{$absolutePath}/public/build";
 
             // Build rsync command
-            $host = config('directadmin-deploy.ssh.host');
-            $username = config('directadmin-deploy.ssh.username');
-            $port = config('directadmin-deploy.ssh.port', 22);
+            $host = config('hostinger-deploy.ssh.host');
+            $username = config('hostinger-deploy.ssh.username');
+            $port = config('hostinger-deploy.ssh.port', 22);
 
             // Use rsync to copy files
             $rsyncCommand = sprintf(
