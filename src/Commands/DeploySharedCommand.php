@@ -23,7 +23,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
      */
     public function handle(): int
     {
-        $this->info('🚀 Starting Hostinger deployment...');
+        $this->info('🚀 Starting DirectAdmin deployment...');
 
         // Validate configuration
         if (! $this->validateConfiguration()) {
@@ -317,13 +317,17 @@ class DeploySharedCommand extends BaseDirectAdminCommand
     {
         $commands = [];
         $absolutePath = $this->getAbsoluteSitePath($siteDir);
+        $username = config('directadmin-deploy.ssh.username');
+        $domainPath = "/home/{$username}/domains/{$siteDir}";
 
-        // Create site directory
+        // Create site directory structure
         $commands[] = "mkdir -p {$absolutePath}";
         $commands[] = "cd {$absolutePath}";
 
-        // Remove public_html if exists
+        // Remove existing public_html symlink if exists (at domain root level)
+        $commands[] = "cd {$domainPath}";
         $commands[] = 'rm -rf public_html';
+        $commands[] = "cd {$absolutePath}";
 
         // Add Git host to known_hosts to avoid interactive prompt on first clone
         // This is safe and necessary for automated deployments
@@ -356,23 +360,25 @@ class DeploySharedCommand extends BaseDirectAdminCommand
         }
 
         // Install dependencies
-        $composerFlags = config('hostinger-deploy.deployment.composer_flags', '--no-dev --optimize-autoloader');
+        $composerFlags = config('directadmin-deploy.deployment.composer_flags', '--no-dev --optimize-autoloader');
         $commands[] = "composer install {$composerFlags}";
 
         // Copy .env.example to .env
         $commands[] = 'if [ -f .env.example ]; then cp .env.example .env; fi';
 
-        // Create symbolic link for Laravel public folder
-        $commands[] = 'if [ -d public ]; then ln -s public public_html; fi';
+        // Create symbolic link from domain root public_html to Laravel public folder
+        $commands[] = "cd {$domainPath}";
+        $commands[] = 'ln -s laravel_html/public public_html';
+        $commands[] = "cd {$absolutePath}";
 
         // Laravel setup
         $commands[] = 'php artisan key:generate --quiet';
 
-        if (config('hostinger-deploy.deployment.run_migrations', true)) {
+        if (config('directadmin-deploy.deployment.run_migrations', true)) {
             $commands[] = "echo 'yes' | php artisan migrate --quiet";
         }
 
-        if (config('hostinger-deploy.deployment.run_storage_link', true)) {
+        if (config('directadmin-deploy.deployment.run_storage_link', true)) {
             $commands[] = 'php artisan storage:link --quiet';
         }
 
@@ -430,7 +436,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
             if (! $keyExists && $this->githubAPI && $repoInfo) {
                 try {
                     $this->info('🔑 Attempting to add deploy key via API...');
-                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'Hostinger Server', false);
+                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'DirectAdmin Server', false);
                     $this->info('✅ Deploy key added successfully via API');
                     // Retry deployment
                     $this->info('🔄 Retrying deployment...');
@@ -465,7 +471,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
                 $this->line('');
                 $this->warn('   Steps:');
                 $this->line('   1. Click "Add deploy key"');
-                $this->line('   2. Give it a title (e.g., "Hostinger Server")');
+                $this->line('   2. Give it a title (e.g., "DirectAdmin Server")');
                 $this->line('   3. Paste the public key below');
                 $this->line('   4. ✅ Check "Allow write access" (optional, for deployments)');
                 $this->line('   5. Click "Add key"');
@@ -702,9 +708,9 @@ class DeploySharedCommand extends BaseDirectAdminCommand
             $remoteBuildPath = "{$absolutePath}/public/build";
 
             // Build rsync command
-            $host = config('hostinger-deploy.ssh.host');
-            $username = config('hostinger-deploy.ssh.username');
-            $port = config('hostinger-deploy.ssh.port', 22);
+            $host = config('directadmin-deploy.ssh.host');
+            $username = config('directadmin-deploy.ssh.username');
+            $port = config('directadmin-deploy.ssh.port', 22);
 
             // Use rsync to copy files
             $rsyncCommand = sprintf(

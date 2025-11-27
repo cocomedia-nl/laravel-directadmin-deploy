@@ -5,90 +5,93 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 2025-11-11
+> **Note:** This package is a fork of [thecodeholic/laravel-hostinger-deploy](https://github.com/thecodeholic/laravel-hostinger-deploy), rebranded and adapted for DirectAdmin shared hosting environments. For historical versions (0.1.0-0.4.0), please refer to the [original repository](https://github.com/thecodeholic/laravel-hostinger-deploy).
 
-### Added
-- Full Laravel environment setup in `build-assets` job to support Laravel Vite plugins
-- PHP, Composer, and .env configuration in the build-assets job
-- Artifact upload/download mechanism to share built assets between GitHub Actions jobs
-- `build-assets` job now properly generates `vendor/autoload.php` before building frontend assets
+## [0.1.0] - 2025-11-27
 
-### Fixed
-- Fixed build failure when Laravel Vite plugins require PHP artisan commands during asset compilation
-- Fixed missing Composer dependencies causing "vendor/autoload.php not found" error during npm build
-- Fixed artifact sharing issue where built assets from `build-assets` job were not available in `deploy` job
+### Initial Release
 
-### Improved
-- GitHub Actions workflow now properly isolates and shares build artifacts between jobs
-- Better dependency management between jobs (deploy now depends on both tests and build-assets)
+This is the first stable release of the DirectAdmin deployment package, forked from the original Hostinger deployment package.
 
-## [0.3.0] - 2025-01-XX
+### What's Included
 
-### Added
-- Enhanced error handling with detailed error messages showing exit codes and command output
-- `--show-errors` flag for `hostinger:deploy` command to display verbose error information
-- Automatic Git host key verification: Automatically adds Git repository host (GitHub, GitLab, etc.) to `known_hosts` to prevent interactive prompts during first-time cloning
-- Support for all Git hosting providers: Extracts hostname from repository URL automatically (GitHub, GitLab, Bitbucket, etc.)
+-   Complete DirectAdmin shared hosting deployment support
+-   Automated GitHub Actions workflow setup
+-   SSH key management and deploy key automation
+-   Frontend asset building and deployment
+-   Full Laravel environment setup in CI/CD pipeline
+-   Enhanced error handling with detailed diagnostics
+-   Support for Laravel 11 and 12
 
-### Improved
-- Error messages now include exit codes, error output (stderr), and regular output (stdout) from failed SSH commands
-- Deployment failures now provide actionable debugging information instead of generic error messages
-- Fixed first-time repository cloning issue where SSH would prompt for host key verification
-- Better error visibility: Errors with detailed information are automatically shown even without the `--show-errors` flag
+### Available Commands
 
-### Documentation
-- Added requirement documentation for PHP `exec()` function in README
-- Added SSH public key authentication setup recommendations and instructions
-- Moved environment variables section to the top of README for better visibility
-- Enhanced README with clearer setup instructions and security best practices
+-   `directadmin:deploy` - Deploy Laravel application to DirectAdmin shared hosting
+-   `directadmin:setup-cicd` - Setup automated deployment via GitHub API
+-   `directadmin:deploy-and-setup-cicd` - All-in-one deployment and CI/CD setup
+-   `directadmin:publish-workflow` - Create GitHub Actions workflow file locally
 
-### Fixed
-- Fixed deployment failure on first-time git clone due to host key verification prompt
-- Improved error reporting when deployment commands fail with non-zero exit codes
+### Required Environment Variables
 
-## [0.2.0] - 2025-10-31
+```env
+DIRECTADMIN_SSH_HOST=your-server-ip
+DIRECTADMIN_SSH_USERNAME=your-username
+DIRECTADMIN_SSH_PORT=22
+DIRECTADMIN_SITE_DIR=your-website-folder
+GITHUB_API_TOKEN=your-github-token # Optional, for automated setup
+```
 
-### Added
-- Automatic npm build support: `hostinger:deploy` now automatically detects `package.json` and builds frontend assets locally before deployment
-- Built asset copying: Automatically copies `public/build/` directory to the remote server using rsync after deployment
-- GitHub Actions workflow enhancements:
-  - SSH key installation step for secure authentication
-  - Automatic copying of built frontend assets to the remote server
-  - Support for projects with npm/frontend build requirements
+### Migration from Original Package
 
-### Changed
-- Refactored all commands to extend `BaseHostingerCommand` base class for better code organization and DRY principles
-- Renamed `hostinger:deploy-shared` to `hostinger:deploy` (simpler, more intuitive name)
-- Renamed `hostinger:setup-automated-deploy` to `hostinger:setup-cicd` (more accurate terminology)
-- Renamed `hostinger:deploy-and-setup-automated` to `hostinger:deploy-and-setup-cicd` (consistent naming)
+If you're migrating from `thecodeholic/laravel-hostinger-deploy`:
 
-### Improved
-- Reduced code duplication by extracting common methods into `BaseHostingerCommand`
-- Improved maintainability - changes to shared logic now only need to be made once
-- Better code organization with centralized configuration validation, SSH setup, and GitHub API initialization
-- Frontend assets are now built locally (no npm required on shared hosting servers)
+1. Update composer.json:
 
-## [0.1.0] - 2025-10-31
+```bash
+composer remove thecodeholic/laravel-hostinger-deploy
+composer require erwinliemburg/laravel-directadmin-deploy --dev
+```
 
-### Added
-- Initial stable release
-- `hostinger:deploy-and-setup-automated` - All-in-one command for deployment and automated setup
-- `hostinger:deploy-shared` - Manual deployment to Hostinger shared hosting
-- `hostinger:publish-workflow` - Create GitHub Actions workflow file locally
-- `hostinger:setup-automated-deploy` - Setup automated deployment via GitHub API
-- SSH key generation and management on Hostinger server
-- GitHub Actions workflow generation
-- GitHub API integration for automatic secret management
-- Support for Laravel 11 and 12
-- Comprehensive deployment process (composer install, migrations, storage links, optimizations)
-- Interactive deployment with conflict resolution
-- Git authentication error handling with deploy key setup
+2. Update your `.env` file:
+
+```diff
+- HOSTINGER_SSH_HOST=your-host
+- HOSTINGER_SSH_USERNAME=your-username
+- HOSTINGER_SSH_PORT=22
+- HOSTINGER_SITE_DIR=your-domain.com
++ DIRECTADMIN_SSH_HOST=your-host
++ DIRECTADMIN_SSH_USERNAME=your-username
++ DIRECTADMIN_SSH_PORT=22
++ DIRECTADMIN_SITE_DIR=your-domain.com
+```
+
+3. Update your command calls:
+
+```diff
+- php artisan hostinger:deploy
++ php artisan directadmin:deploy
+```
+
+4. Republish config and workflow:
+
+```bash
+php artisan vendor:publish --tag=directadmin-deploy-config --force
+php artisan directadmin:publish-workflow
+```
+
+5. Update GitHub repository secrets to use the new environment variable names
+
+### Why DirectAdmin?
+
+This package specifically targets DirectAdmin shared hosting environments, providing optimized support for DirectAdmin's directory structure (`domains/your-site/laravel_html`) and deployment patterns. While the original package works with various shared hosting providers, this fork focuses exclusively on DirectAdmin configurations.
 
 ### Features
-- One-command deployment to Hostinger shared hosting
-- Automated GitHub Actions workflow setup
-- Manual and automated deployment options
-- SSH key management
-- Environment variable configuration
-- Configurable deployment options via config file
 
+-   **One-command deployment** - `directadmin:deploy-and-setup-cicd` handles everything
+-   **Automatic npm build support** - Detects `package.json` and builds frontend assets locally
+-   **Built asset copying** - Automatically copies `public/build/` to remote server using rsync
+-   **Enhanced error handling** - Detailed error messages with exit codes and command output
+-   **Git host key verification** - Automatically adds Git hosts to `known_hosts`
+-   **Deploy key automation** - Automatic deploy key management via GitHub API
+-   **Interactive deployment** - Conflict resolution and user prompts
+-   **Laravel optimizations** - Composer install, migrations, storage link, caching
+-   **GitHub Actions integration** - Full CI/CD workflow with tests and asset building

@@ -6,7 +6,7 @@ return [
     | SSH Connection Settings
     |--------------------------------------------------------------------------
     |
-    | These settings are used for SSH connections to your Hostinger server.
+    | These settings are used for SSH connections to your DirectAdmin server.
     | You can override these in your .env file.
     |
     */

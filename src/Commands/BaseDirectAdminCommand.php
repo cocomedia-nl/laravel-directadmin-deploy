@@ -354,7 +354,7 @@ abstract class BaseDirectAdminCommand extends Command
     {
         $username = config('directadmin-deploy.ssh.username');
 
-        return "/home/{$username}/domains/{$siteDir}";
+        return "/home/{$username}/domains/{$siteDir}/laravel_html";
     }
 
     /**
