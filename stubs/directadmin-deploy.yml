@@ -37,7 +37,7 @@ jobs:
 
             - name: Install Composer Dependencies
               env:
-              COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
+                  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
               run: composer install --prefer-dist --no-interaction --no-progress
 
             - name: Generate Application Key
@@ -92,7 +92,7 @@ jobs:
               run: composer config --unset repositories.0
             - name: Install Composer Dependencies
               env:
-              COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
+                  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
               run: composer install --prefer-dist --no-interaction --no-progress
 
             - name: Generate Application Key
