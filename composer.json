@@ -1,8 +1,8 @@
 {
-    "name": "ErwinLiemburg/laravel-directadmin-deploy",
+    "name": "erwinliemburg/laravel-directadmin-deploy",
     "description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
     "type": "library",
-    "version": "0.1.0",
+    "version": "dev-master",
     "license": "MIT",
     "keywords": [
         "laravel",
