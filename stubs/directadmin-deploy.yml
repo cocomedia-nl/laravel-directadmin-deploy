@@ -3,7 +3,7 @@ name: DirectAdmin Deploy
 on:
     push:
         #prettier-ignore
-        branches: [{{ BRANCH }}]
+        branches: [{{BRANCH}}]
     workflow_dispatch:
 
 jobs:
