@@ -1,23 +1,25 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Commands;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
 
+use ErwinLiemburg\LaravelDirectAdminDeploy\Services\GitHubActionsService;
+use ErwinLiemburg\LaravelDirectAdminDeploy\Services\GitHubAPIService;
+use ErwinLiemburg\LaravelDirectAdminDeploy\Services\SshConnectionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use TheCodeholic\LaravelHostingerDeploy\Services\SshConnectionService;
-use TheCodeholic\LaravelHostingerDeploy\Services\GitHubActionsService;
-use TheCodeholic\LaravelHostingerDeploy\Services\GitHubAPIService;
 
-abstract class BaseHostingerCommand extends Command
+abstract class BaseDirectAdminCommand extends Command
 {
     protected SshConnectionService $ssh;
+
     protected GitHubActionsService $github;
+
     protected ?GitHubAPIService $githubAPI = null;
 
     public function __construct()
     {
         parent::__construct();
-        $this->github = new GitHubActionsService();
+        $this->github = new GitHubActionsService;
     }
 
     /**
@@ -26,15 +28,16 @@ abstract class BaseHostingerCommand extends Command
     protected function validateConfiguration(): bool
     {
         $required = [
-            'HOSTINGER_SSH_HOST' => config('hostinger-deploy.ssh.host'),
-            'HOSTINGER_SSH_USERNAME' => config('hostinger-deploy.ssh.username'),
-            'HOSTINGER_SITE_DIR' => $this->getSiteDir(),
+            'DIRECTADMIN_SSH_HOST' => config('directadmin-deploy.ssh.host'),
+            'DIRECTADMIN_SSH_USERNAME' => config('directadmin-deploy.ssh.username'),
+            'DIRECTADMIN_SITE_DIR' => $this->getSiteDir(),
         ];
 
         foreach ($required as $key => $value) {
             if (empty($value)) {
                 $this->error("❌ Missing required environment variable: {$key}");
                 $this->info("Please add {$key} to your .env file");
+
                 return false;
             }
         }
@@ -47,7 +50,7 @@ abstract class BaseHostingerCommand extends Command
      */
     protected function getRepositoryInfo(): ?array
     {
-        if (!$this->github->isGitRepository()) {
+        if (! $this->github->isGitRepository()) {
             return null;
         }
 
@@ -60,8 +63,8 @@ abstract class BaseHostingerCommand extends Command
     protected function getRepositoryUrl(): ?string
     {
         $repoUrl = $this->github->getRepositoryUrl();
-        
-        if (!$repoUrl) {
+
+        if (! $repoUrl) {
             return null;
         }
 
@@ -76,10 +79,10 @@ abstract class BaseHostingerCommand extends Command
     protected function setupSshConnection(): void
     {
         $this->ssh = new SshConnectionService(
-            config('hostinger-deploy.ssh.host'),
-            config('hostinger-deploy.ssh.username'),
-            config('hostinger-deploy.ssh.port', 22),
-            config('hostinger-deploy.ssh.timeout', 30)
+            config('directadmin-deploy.ssh.host'),
+            config('directadmin-deploy.ssh.username'),
+            config('directadmin-deploy.ssh.port', 22),
+            config('directadmin-deploy.ssh.timeout', 30)
         );
     }
 
@@ -91,13 +94,13 @@ abstract class BaseHostingerCommand extends Command
         try {
             $token = $this->option('token') ?: env('GITHUB_API_TOKEN');
 
-            if (!$token) {
+            if (! $token) {
                 if ($required) {
                     $this->line('');
                     $this->warn('⚠️  GitHub Personal Access Token is not set.');
                     $this->line('');
-                    
-                    if (!$this->confirm('Do you want to proceed?', true)) {
+
+                    if (! $this->confirm('Do you want to proceed?', true)) {
                         // User chose "no" - show instructions and exit
                         $this->line('');
                         $this->warn('💡 How to provide your GitHub Personal Access Token:');
@@ -108,19 +111,21 @@ abstract class BaseHostingerCommand extends Command
                         $this->line('');
                         $this->info('📝 Please add GITHUB_API_TOKEN to your .env file and rerun the script.');
                         $this->line('');
+
                         return false;
                     }
-                    
+
                     // User chose "yes" - continue without token, secrets will be displayed manually
                     $this->warn('⚠️  Continuing without Personal Access Token. Secrets will be displayed for manual setup.');
+
                     return true;
                 }
 
                 $this->line('');
                 $this->warn('⚠️  GitHub Personal Access Token is not set.');
                 $this->line('');
-                
-                if (!$this->confirm('Do you want to proceed?', true)) {
+
+                if (! $this->confirm('Do you want to proceed?', true)) {
                     // User chose "no" - show instructions and halt
                     $this->line('');
                     $this->showGitHubTokenInstructions();
@@ -129,40 +134,46 @@ abstract class BaseHostingerCommand extends Command
                     $this->line('');
                     exit(0);
                 }
-                
+
                 // User chose "yes" - continue without token, deploy key will be shown manually
                 $this->warn('⚠️  Continuing without Personal Access Token. Deploy key will be displayed for manual addition.');
+
                 return true;
             }
 
             $this->githubAPI = new GitHubAPIService($token);
 
             // Test API connection
-            if (!$this->githubAPI->testConnection()) {
+            if (! $this->githubAPI->testConnection()) {
                 if ($required) {
                     $this->error('❌ Failed to authenticate with GitHub API. Please check your token.');
                     $this->githubAPI = null;
+
                     return false;
                 }
 
                 $this->warn('⚠️  GitHub API connection failed. Deploy key will need to be added manually.');
                 $this->githubAPI = null;
+
                 return true;
             }
 
             $this->info('✅ GitHub API connection successful');
+
             return true;
         } catch (\Exception $e) {
             if ($required) {
-                $this->error("❌ GitHub API error: " . $e->getMessage());
+                $this->error('❌ GitHub API error: '.$e->getMessage());
                 $this->githubAPI = null;
+
                 return false;
             }
 
             // API is optional, continue without it
-            $this->warn('⚠️  GitHub API initialization failed: ' . $e->getMessage());
+            $this->warn('⚠️  GitHub API initialization failed: '.$e->getMessage());
             $this->warn('   Deploy key will need to be added manually.');
             $this->githubAPI = null;
+
             return true;
         }
     }
@@ -176,7 +187,7 @@ abstract class BaseHostingerCommand extends Command
         $this->line('');
         $this->line('   1. Go to: https://github.com/settings/personal-access-tokens');
         $this->line('   2. Click "Generate new token" → "Generate new token (classic)"');
-        $this->line('   3. Give your token a descriptive name (e.g., "Hostinger Deploy")');
+        $this->line('   3. Give your token a descriptive name (e.g., "DirectAdmin Deploy")');
         $this->line('   4. Set expiration (or no expiration)');
         $this->line('   5. Select the following permissions:');
         $this->line('');
@@ -200,10 +211,11 @@ abstract class BaseHostingerCommand extends Command
     protected function setupSshKeys(bool $addToAuthorizedKeys = true): bool
     {
         try {
-            if (!$this->ssh->sshKeyExists()) {
+            if (! $this->ssh->sshKeyExists()) {
                 $this->info('🔑 Generating SSH keys on server...');
-                if (!$this->ssh->generateSshKey()) {
+                if (! $this->ssh->generateSshKey()) {
                     $this->error('❌ Failed to generate SSH keys');
+
                     return false;
                 }
             } else {
@@ -212,23 +224,26 @@ abstract class BaseHostingerCommand extends Command
 
             // Get public key
             $publicKey = $this->ssh->getPublicKey();
-            
-            if (!$publicKey) {
+
+            if (! $publicKey) {
                 $this->error('❌ Could not retrieve public key from server');
+
                 return false;
             }
 
             // Add to authorized_keys if requested
             if ($addToAuthorizedKeys) {
-                if (!$this->ssh->addToAuthorizedKeys($publicKey)) {
+                if (! $this->ssh->addToAuthorizedKeys($publicKey)) {
                     $this->warn('⚠️  Could not add public key to authorized_keys (may already exist)');
                 }
             }
 
             $this->info('✅ SSH keys setup completed');
+
             return true;
         } catch (\Exception $e) {
-            $this->error("SSH keys setup error: " . $e->getMessage());
+            $this->error('SSH keys setup error: '.$e->getMessage());
+
             return false;
         }
     }
@@ -238,16 +253,17 @@ abstract class BaseHostingerCommand extends Command
      */
     protected function addDeployKeyViaAPI(string $publicKey, ?array $repoInfo = null): void
     {
-        if (!$this->githubAPI) {
+        if (! $this->githubAPI) {
             return;
         }
 
         try {
             // Get repository information if not provided
-            if (!$repoInfo) {
+            if (! $repoInfo) {
                 $repoInfo = $this->github->getRepositoryInfo();
-                if (!$repoInfo) {
+                if (! $repoInfo) {
                     $this->warn('⚠️  Could not detect repository information. Skipping automatic deploy key setup.');
+
                     return;
                 }
             }
@@ -260,16 +276,17 @@ abstract class BaseHostingerCommand extends Command
             // Check if key already exists
             if ($this->githubAPI->keyExists($owner, $repo, $publicKey)) {
                 $this->info('✅ Deploy key already exists in repository');
+
                 return;
             }
 
             // Create deploy key
-            $this->githubAPI->createDeployKey($owner, $repo, $publicKey, 'Hostinger Server', false);
+            $this->githubAPI->createDeployKey($owner, $repo, $publicKey, 'DirectAdmin Server', false);
             $this->info('✅ Deploy key added successfully to repository');
         } catch (\Exception $e) {
-            $this->warn('⚠️  Failed to add deploy key via API: ' . $e->getMessage());
+            $this->warn('⚠️  Failed to add deploy key via API: '.$e->getMessage());
             $this->warn('   You may need to add it manually.');
-            
+
             // Check if key might already exist before showing manual instructions
             $repoInfoForCheck = $repoInfo ?: $this->github->getRepositoryInfo();
             $keyExists = false;
@@ -278,6 +295,7 @@ abstract class BaseHostingerCommand extends Command
                     $keyExists = $this->githubAPI->keyExists($repoInfoForCheck['owner'], $repoInfoForCheck['name'], $publicKey);
                     if ($keyExists) {
                         $this->info('✅ Deploy key already exists in repository');
+
                         return;
                     }
                 } catch (\Exception $e) {
@@ -292,7 +310,7 @@ abstract class BaseHostingerCommand extends Command
             $this->line('');
             $this->line($publicKey);
             $this->line('');
-            
+
             if (method_exists($this, 'ask')) {
                 $this->ask('Press ENTER after adding the key to GitHub to continue...', '');
             }
@@ -304,9 +322,9 @@ abstract class BaseHostingerCommand extends Command
      */
     protected function generateWorkflowContent(string $branch, string $phpVersion): string
     {
-        $stubPath = __DIR__ . '/../../stubs/hostinger-deploy.yml';
-        
-        if (!File::exists($stubPath)) {
+        $stubPath = __DIR__.'/../../stubs/directadmin-deploy.yml';
+
+        if (! File::exists($stubPath)) {
             throw new \Exception("Workflow stub not found: {$stubPath}");
         }
 
@@ -325,8 +343,8 @@ abstract class BaseHostingerCommand extends Command
         if ($this->hasOption('site-dir') && $this->option('site-dir')) {
             return $this->option('site-dir');
         }
-        
-        return config('hostinger-deploy.deployment.site_dir');
+
+        return config('directadmin-deploy.deployment.site_dir');
     }
 
     /**
@@ -334,7 +352,8 @@ abstract class BaseHostingerCommand extends Command
      */
     protected function getAbsoluteSitePath(string $siteDir): string
     {
-        $username = config('hostinger-deploy.ssh.username');
+        $username = config('directadmin-deploy.ssh.username');
+
         return "/home/{$username}/domains/{$siteDir}";
     }
 
@@ -349,36 +368,36 @@ abstract class BaseHostingerCommand extends Command
             // Escape the repo URL properly
             $escapedRepoUrl = escapeshellarg($repoUrl);
             $testCommand = "git ls-remote {$escapedRepoUrl} HEAD 2>&1";
-            
+
             try {
                 $result = $this->ssh->execute($testCommand);
-                
+
                 // Check for successful access indicators
                 // If we get a commit hash or refs/heads/, the access works
-                if (preg_match('/^[a-f0-9]{40}\s+refs\/heads\/HEAD/', $result) || 
+                if (preg_match('/^[a-f0-9]{40}\s+refs\/heads\/HEAD/', $result) ||
                     preg_match('/^[a-f0-9]{40}\s+HEAD/', $result) ||
                     stripos($result, 'refs/heads') !== false) {
                     return true;
                 }
-                
+
                 // If no permission errors, assume it works
                 $errorIndicators = [
                     'Permission denied',
                     'repository not found',
                     'Could not read from remote repository',
                     'Authentication failed',
-                    'Host key verification failed'
+                    'Host key verification failed',
                 ];
-                
+
                 foreach ($errorIndicators as $indicator) {
                     if (stripos($result, $indicator) !== false) {
                         return false;
                     }
                 }
-                
+
                 // If we got some output and no errors, assume it works
-                return !empty(trim($result));
-                
+                return ! empty(trim($result));
+
             } catch (\Exception $e) {
                 // Check the error message for permission issues
                 $errorMsg = $e->getMessage();
@@ -388,15 +407,15 @@ abstract class BaseHostingerCommand extends Command
                     'Could not read from remote repository',
                     'Authentication failed',
                     'Host key verification failed',
-                    'SSH command failed'
+                    'SSH command failed',
                 ];
-                
+
                 foreach ($errorIndicators as $indicator) {
                     if (stripos($errorMsg, $indicator) !== false) {
                         return false;
                     }
                 }
-                
+
                 // If error doesn't indicate permission issue, might be network/server issue
                 // Assume deploy key might not be set up
                 return false;
@@ -413,7 +432,7 @@ abstract class BaseHostingerCommand extends Command
     protected function isGitAuthenticationError(\Exception $e): bool
     {
         $errorMessage = $e->getMessage();
-        
+
         // Check for common git authentication error messages
         $authErrorPatterns = [
             'Repository not found',
@@ -444,20 +463,21 @@ abstract class BaseHostingerCommand extends Command
 
         // Get private key
         $privateKey = $this->ssh->getPrivateKey();
-        if (!$privateKey) {
+        if (! $privateKey) {
             $this->error('❌ Could not retrieve private key from server');
+
             return;
         }
 
         // Display secrets
         $this->warn('📋 Add these secrets to your GitHub repository:');
-        $this->line('Go to: ' . $repoInfo['secrets_url']);
+        $this->line('Go to: '.$repoInfo['secrets_url']);
         $this->line('');
 
         $secrets = [
-            'SSH_HOST' => config('hostinger-deploy.ssh.host'),
-            'SSH_USERNAME' => config('hostinger-deploy.ssh.username'),
-            'SSH_PORT' => (string) config('hostinger-deploy.ssh.port', 22),
+            'SSH_HOST' => config('directadmin-deploy.ssh.host'),
+            'SSH_USERNAME' => config('directadmin-deploy.ssh.username'),
+            'SSH_PORT' => (string) config('directadmin-deploy.ssh.port', 22),
             'SSH_KEY' => $privateKey,
             'WEBSITE_FOLDER' => $this->getSiteDir(),
         ];
@@ -467,9 +487,9 @@ abstract class BaseHostingerCommand extends Command
             if ($name === 'SSH_KEY') {
                 $this->line('   [Copy the private key below]');
                 $this->line('');
-                $this->line('   ' . str_repeat('-', 50));
+                $this->line('   '.str_repeat('-', 50));
                 $this->line($value);
-                $this->line('   ' . str_repeat('-', 50));
+                $this->line('   '.str_repeat('-', 50));
             } else {
                 $this->line("   {$value}");
             }
@@ -483,7 +503,7 @@ abstract class BaseHostingerCommand extends Command
             // Test if we can access the repository via SSH (best way to verify deploy key works)
             $repoUrl = $repoInfo['url'];
             $sshRepoUrl = "git@github.com:{$repoInfo['owner']}/{$repoInfo['name']}.git";
-            
+
             // Check if deploy key already exists via API (if available)
             $keyExists = false;
             if ($this->githubAPI) {
@@ -493,18 +513,18 @@ abstract class BaseHostingerCommand extends Command
                     // If check fails, test repository access instead
                 }
             }
-            
+
             // If API check didn't confirm, test repository access via SSH
-            if (!$keyExists) {
+            if (! $keyExists) {
                 $keyExists = $this->testRepositoryAccess($sshRepoUrl);
             }
-            
+
             // Fallback: If API is not initialized but we might have a token, try to check via API
-            if (!$keyExists && !$this->githubAPI) {
+            if (! $keyExists && ! $this->githubAPI) {
                 $token = $this->option('token') ?: env('GITHUB_API_TOKEN');
                 if ($token) {
                     try {
-                        $tempAPI = new \TheCodeholic\LaravelHostingerDeploy\Services\GitHubAPIService($token);
+                        $tempAPI = new \ErwinLiemburg\LaravelDirectAdminDeploy\Services\GitHubAPIService($token);
                         $keyExists = $tempAPI->keyExists($repoInfo['owner'], $repoInfo['name'], $publicKey);
                     } catch (\Exception $e) {
                         // If check fails, test repository access instead
@@ -521,16 +541,15 @@ abstract class BaseHostingerCommand extends Command
                 $this->line('');
             } else {
                 $this->warn('🔑 Deploy Key Information:');
-                $this->line('Go to: ' . $repoInfo['deploy_keys_url']);
+                $this->line('Go to: '.$repoInfo['deploy_keys_url']);
                 $this->line('');
                 $this->line('Add this public key as a Deploy Key:');
                 $this->line('');
-                $this->line('   ' . str_repeat('-', 50));
+                $this->line('   '.str_repeat('-', 50));
                 $this->line($publicKey);
-                $this->line('   ' . str_repeat('-', 50));
+                $this->line('   '.str_repeat('-', 50));
                 $this->line('');
             }
         }
     }
 }
-

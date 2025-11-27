@@ -1,14 +1,13 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Commands;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
 
-class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
+class DeployAndSetupAutomatedCommand extends BaseDirectAdminCommand
 {
-
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'hostinger:deploy-and-setup-cicd 
+    protected $signature = 'directadmin:deploy-and-setup-cicd 
                             {--fresh : Delete and clone fresh repository}
                             {--site-dir= : Override site directory from config}
                             {--token= : GitHub Personal Access Token}
@@ -18,7 +17,7 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
     /**
      * The console command description.
      */
-    protected $description = 'Deploy Laravel application to Hostinger and setup automated deployment via GitHub API';
+    protected $description = 'Deploy Laravel application to DirectAdmin and setup automated deployment via GitHub API';
 
     /**
      * Execute the console command.
@@ -30,10 +29,10 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
 
         // Get or prompt for GitHub Personal Access Token if needed for Step 2
         $token = $this->option('token') ?: env('GITHUB_API_TOKEN');
-        
+
         // Step 1: Deploy to server
         $this->info('═══════════════════════════════════════════════════════');
-        $this->info('Step 1: Deploying to Hostinger Server');
+        $this->info('Step 1: Deploying to DirectAdmin Server');
         $this->info('═══════════════════════════════════════════════════════');
         $this->line('');
 
@@ -44,7 +43,7 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
         if ($this->option('site-dir')) {
             $deployOptions['--site-dir'] = $this->option('site-dir');
         }
-        
+
         // Pass token to deploy command if available
         if ($token) {
             $deployOptions['--token'] = $token;
@@ -53,14 +52,15 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
         // Call the deploy command - output will be shown in real-time
         // Pass through verbosity level to ensure all output is shown
         $deployOptions['-v'] = true;
-        $deployExitCode = $this->call('hostinger:deploy', $deployOptions);
-        
+        $deployExitCode = $this->call('directadmin:deploy', $deployOptions);
+
         // If token was provided interactively in deploy command, capture it
         // (Note: This won't work if entered interactively in sub-command, so we'll prompt before Step 2 instead)
-        
+
         if ($deployExitCode !== self::SUCCESS) {
             $this->line('');
             $this->error('❌ Deployment to server failed. Cannot proceed with automated setup.');
+
             return self::FAILURE;
         }
 
@@ -87,16 +87,17 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
         // Call the setup command - output will be shown in real-time
         // Pass through verbosity level to ensure all output is shown
         $setupOptions['-v'] = true;
-        $setupExitCode = $this->call('hostinger:setup-cicd', $setupOptions);
-        
+        $setupExitCode = $this->call('directadmin:setup-cicd', $setupOptions);
+
         if ($setupExitCode !== self::SUCCESS) {
             $this->line('');
             $this->error('❌ Automated deployment setup failed.');
+
             return self::FAILURE;
         }
 
         $siteDir = $this->getSiteDir();
-        
+
         $this->line('');
         $this->info('═══════════════════════════════════════════════════════');
         $this->info('🎉 Complete Setup Finished Successfully!');
@@ -105,10 +106,10 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
         $this->info("🌐 Your Laravel application: https://{$siteDir}");
         $this->line('');
         $this->info('🚀 Next steps:');
-        $this->line('   1. Review the workflow file at .github/workflows/hostinger-deploy.yml');
+        $this->line('   1. Review the workflow file at .github/workflows/directadmin-deploy.yml');
         $this->line('   2. Commit and push the workflow file:');
-        $this->line('      git add .github/workflows/hostinger-deploy.yml');
-        $this->line('      git commit -m "Add Hostinger deployment workflow"');
+        $this->line('      git add .github/workflows/directadmin-deploy.yml');
+        $this->line('      git commit -m "Add DirectAdmin deployment workflow"');
         $this->line('      git push');
         $this->line('   3. Monitor deployments in the Actions tab on GitHub');
         $this->line('   4. Your application will automatically deploy on push');
@@ -117,4 +118,3 @@ class DeployAndSetupAutomatedCommand extends BaseHostingerCommand
         return self::SUCCESS;
     }
 }
-

@@ -1,6 +1,6 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Services;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Services;
 
 use Illuminate\Support\Facades\Process;
 
@@ -13,11 +13,11 @@ class GitHubActionsService
     {
         try {
             $result = Process::run('git config --get remote.origin.url');
-            
-            if (!$result->successful()) {
+
+            if (! $result->successful()) {
                 return null;
             }
-            
+
             return trim($result->output());
         } catch (\Exception $e) {
             return null;
@@ -31,12 +31,13 @@ class GitHubActionsService
     {
         try {
             $result = Process::run('git branch --show-current');
-            
-            if (!$result->successful()) {
+
+            if (! $result->successful()) {
                 return 'main';
             }
-            
+
             $branch = trim($result->output());
+
             return $branch ?: 'main';
         } catch (\Exception $e) {
             return 'main';
@@ -53,19 +54,19 @@ class GitHubActionsService
             return [
                 'owner' => $matches[1],
                 'name' => $matches[2],
-                'url' => "https://github.com/{$matches[1]}/{$matches[2]}"
+                'url' => "https://github.com/{$matches[1]}/{$matches[2]}",
             ];
         }
-        
+
         // Handle HTTPS URLs: https://github.com/owner/repo.git
         if (preg_match('/https:\/\/github\.com\/([^\/]+)\/([^\/]+)\.git/', $url, $matches)) {
             return [
                 'owner' => $matches[1],
                 'name' => $matches[2],
-                'url' => "https://github.com/{$matches[1]}/{$matches[2]}"
+                'url' => "https://github.com/{$matches[1]}/{$matches[2]}",
             ];
         }
-        
+
         return null;
     }
 
@@ -100,6 +101,7 @@ class GitHubActionsService
     {
         try {
             $result = Process::run('git rev-parse --git-dir');
+
             return $result->successful();
         } catch (\Exception $e) {
             return false;
@@ -111,17 +113,17 @@ class GitHubActionsService
      */
     public function getRepositoryInfo(): ?array
     {
-        if (!$this->isGitRepository()) {
+        if (! $this->isGitRepository()) {
             return null;
         }
 
         $url = $this->getRepositoryUrl();
-        if (!$url) {
+        if (! $url) {
             return null;
         }
 
         $parsed = $this->parseRepositoryUrl($url);
-        if (!$parsed) {
+        if (! $parsed) {
             return null;
         }
 

@@ -11,9 +11,9 @@ return [
     |
     */
     'ssh' => [
-        'host' => env('HOSTINGER_SSH_HOST'),
-        'username' => env('HOSTINGER_SSH_USERNAME'),
-        'port' => env('HOSTINGER_SSH_PORT', 22),
+        'host' => env('DIRECTADMIN_SSH_HOST'),
+        'username' => env('DIRECTADMIN_SSH_USERNAME'),
+        'port' => env('DIRECTADMIN_SSH_PORT', 22),
         'timeout' => 30,
     ],
 
@@ -26,7 +26,7 @@ return [
     |
     */
     'deployment' => [
-        'site_dir' => env('HOSTINGER_SITE_DIR'),
+        'site_dir' => env('DIRECTADMIN_SITE_DIR'),
         'composer_flags' => '--no-dev --optimize-autoloader',
         'run_migrations' => true,
         'run_storage_link' => true,
@@ -44,7 +44,7 @@ return [
     |
     */
     'github' => [
-        'workflow_file' => '.github/workflows/hostinger-deploy.yml',
+        'workflow_file' => '.github/workflows/directadmin-deploy.yml',
         'php_version' => '8.3',
         'default_branch' => 'main',
         'api_token' => env('GITHUB_API_TOKEN'),
@@ -55,7 +55,7 @@ return [
     | Server Paths
     |--------------------------------------------------------------------------
     |
-    | Default paths on the Hostinger server.
+    | Default paths on the DirectAdmin server.
     |
     */
     'paths' => [

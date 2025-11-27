@@ -1,13 +1,13 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Commands;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
 
-class DeploySharedCommand extends BaseHostingerCommand
+class DeploySharedCommand extends BaseDirectAdminCommand
 {
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'hostinger:deploy 
+    protected $signature = 'directadmin:deploy 
                             {--fresh : Delete and clone fresh repository}
                             {--site-dir= : Override site directory from config}
                             {--token= : GitHub Personal Access Token}
@@ -16,7 +16,7 @@ class DeploySharedCommand extends BaseHostingerCommand
     /**
      * The console command description.
      */
-    protected $description = 'Deploy Laravel application to Hostinger shared hosting';
+    protected $description = 'Deploy Laravel application to DirectAdmin shared hosting';
 
     /**
      * Execute the console command.
@@ -26,14 +26,15 @@ class DeploySharedCommand extends BaseHostingerCommand
         $this->info('🚀 Starting Hostinger deployment...');
 
         // Validate configuration
-        if (!$this->validateConfiguration()) {
+        if (! $this->validateConfiguration()) {
             return self::FAILURE;
         }
 
         // Get repository URL
         $repoUrl = $this->getRepositoryUrl();
-        if (!$repoUrl) {
+        if (! $repoUrl) {
             $this->error('❌ Could not detect Git repository URL. Please run this command from a Git repository.');
+
             return self::FAILURE;
         }
 
@@ -46,8 +47,9 @@ class DeploySharedCommand extends BaseHostingerCommand
         $this->setupSshConnection();
 
         // Test SSH connection
-        if (!$this->ssh->testConnection()) {
+        if (! $this->ssh->testConnection()) {
             $this->error('❌ SSH connection failed. Please check your SSH configuration.');
+
             return self::FAILURE;
         }
 
@@ -57,8 +59,9 @@ class DeploySharedCommand extends BaseHostingerCommand
         $this->buildFrontendAssets();
 
         // Deploy to server
-        if (!$this->deployToServer($repoUrl)) {
+        if (! $this->deployToServer($repoUrl)) {
             $this->error('❌ Deployment failed');
+
             return self::FAILURE;
         }
 
@@ -70,7 +73,6 @@ class DeploySharedCommand extends BaseHostingerCommand
 
         return self::SUCCESS;
     }
-
 
     /**
      * Deploy application to server.
@@ -94,6 +96,7 @@ class DeploySharedCommand extends BaseHostingerCommand
             $this->info('📦 Deploying application...');
             try {
                 $this->ssh->executeMultiple($commands);
+
                 return true;
             } catch (\Exception $e) {
                 // Check if this is a git clone authentication error
@@ -107,15 +110,15 @@ class DeploySharedCommand extends BaseHostingerCommand
             if ($this->isGitAuthenticationError($e)) {
                 return $this->handleGitAuthenticationError($repoUrl, $siteDir, 'clone_direct');
             }
-            
+
             // Show error message
-            $this->error("❌ Deployment failed.");
+            $this->error('❌ Deployment failed.');
             $this->line('');
-            
+
             // Show actual error details if show-errors flag is set or if error contains useful info
             $showErrors = $this->option('show-errors');
             $errorMessage = $e->getMessage();
-            
+
             if ($showErrors || strpos($errorMessage, 'Error output:') !== false || strpos($errorMessage, 'exit code:') !== false) {
                 $this->warn('📋 Error Details:');
                 $this->line('');
@@ -124,31 +127,31 @@ class DeploySharedCommand extends BaseHostingerCommand
                 foreach ($errorLines as $line) {
                     // Highlight exit codes and error outputs
                     if (strpos($line, 'exit code:') !== false || strpos($line, 'Error output:') !== false) {
-                        $this->line('   ⚠️  ' . $line);
+                        $this->line('   ⚠️  '.$line);
                     } else {
-                        $this->line('   ' . $line);
+                        $this->line('   '.$line);
                     }
                 }
                 $this->line('');
             }
-            
+
             $this->warn('💡 This might be due to:');
             $this->line('   1. Server connection issues');
             $this->line('   2. Repository access problems');
             $this->line('   3. Missing dependencies on the server');
             $this->line('   4. Command execution failures (composer, git, etc.)');
             $this->line('');
-            
-            if (!$showErrors) {
+
+            if (! $showErrors) {
                 $this->info('💡 Tip: Run with --show-errors flag to see detailed error messages.');
                 $this->line('');
             }
-            
+
             $this->info('🔧 Please check your server configuration and try again.');
+
             return false;
         }
     }
-
 
     /**
      * Setup SSH keys on server if needed and add deploy key via API if available.
@@ -156,15 +159,16 @@ class DeploySharedCommand extends BaseHostingerCommand
      */
     protected function setupSshKeysForDeployment(): void
     {
-        if (!$this->setupSshKeys(false)) {
+        if (! $this->setupSshKeys(false)) {
             return;
         }
 
         // Get public key
         $publicKey = $this->ssh->getPublicKey();
-        
-        if (!$publicKey) {
+
+        if (! $publicKey) {
             $this->error('❌ Could not retrieve public key from server');
+
             return;
         }
 
@@ -189,7 +193,6 @@ class DeploySharedCommand extends BaseHostingerCommand
         // If no API, we'll handle it when git clone fails with permission error
     }
 
-
     /**
      * Check folder status and get deployment choice from user.
      */
@@ -206,6 +209,7 @@ class DeploySharedCommand extends BaseHostingerCommand
 
         if ($folderStatus === 'empty') {
             $this->info('✅ Empty folder - ready to deploy');
+
             return 'clone_direct';
         }
 
@@ -227,9 +231,11 @@ class DeploySharedCommand extends BaseHostingerCommand
 
             if ($choice === '1') {
                 $this->info('🔄 Will replace existing project');
+
                 return 'delete_and_clone_direct';
             } else {
                 $this->info('⏭️  Keeping existing project');
+
                 return 'skip';
             }
         } else {
@@ -243,6 +249,7 @@ class DeploySharedCommand extends BaseHostingerCommand
 
             if ($choice === '1') {
                 $this->info('🔄 Will replace with Laravel project');
+
                 return 'delete_and_clone_direct';
             } else {
                 $this->info('❌ Deployment cancelled');
@@ -257,17 +264,17 @@ class DeploySharedCommand extends BaseHostingerCommand
     protected function checkFolderStatus(string $siteDir): string
     {
         $absolutePath = $this->getAbsoluteSitePath($siteDir);
-        
+
         // First check if directory exists
-        if (!$this->ssh->directoryExists($absolutePath)) {
+        if (! $this->ssh->directoryExists($absolutePath)) {
             return 'empty';
         }
-        
+
         // Then check if it's empty
         if ($this->ssh->directoryIsEmpty($absolutePath)) {
             return 'empty';
         }
-        
+
         return 'not_empty';
     }
 
@@ -277,25 +284,26 @@ class DeploySharedCommand extends BaseHostingerCommand
     protected function isLaravelProject(string $siteDir): bool
     {
         $absolutePath = $this->getAbsoluteSitePath($siteDir);
-        
+
         // Check if directory exists
-        if (!$this->ssh->directoryExists($absolutePath)) {
+        if (! $this->ssh->directoryExists($absolutePath)) {
             return false;
         }
-        
+
         // Check for Laravel-specific files
-        $artisanPath = $absolutePath . '/artisan';
-        $composerPath = $absolutePath . '/composer.json';
-        
-        if (!$this->ssh->fileExists($artisanPath) || !$this->ssh->fileExists($composerPath)) {
+        $artisanPath = $absolutePath.'/artisan';
+        $composerPath = $absolutePath.'/composer.json';
+
+        if (! $this->ssh->fileExists($artisanPath) || ! $this->ssh->fileExists($composerPath)) {
             return false;
         }
-        
+
         // Check if composer.json contains laravel/framework
         try {
             // Path is escaped by buildSshCommand, so use single quotes inside
             $grepCommand = "grep -q 'laravel/framework' '{$composerPath}' 2>/dev/null && echo 'yes' || echo 'no'";
             $result = trim($this->ssh->execute($grepCommand));
+
             return trim($result) === 'yes';
         } catch (\Exception $e) {
             return false;
@@ -315,14 +323,14 @@ class DeploySharedCommand extends BaseHostingerCommand
         $commands[] = "cd {$absolutePath}";
 
         // Remove public_html if exists
-        $commands[] = "rm -rf public_html";
+        $commands[] = 'rm -rf public_html';
 
         // Add Git host to known_hosts to avoid interactive prompt on first clone
         // This is safe and necessary for automated deployments
         $gitHost = $this->extractGitHost($repoUrl);
         if ($gitHost) {
-            $commands[] = "mkdir -p ~/.ssh";
-            $commands[] = "chmod 700 ~/.ssh";
+            $commands[] = 'mkdir -p ~/.ssh';
+            $commands[] = 'chmod 700 ~/.ssh';
             // Escape hostname for security
             $escapedHost = escapeshellarg($gitHost);
             $commands[] = "ssh-keyscan -H {$escapedHost} >> ~/.ssh/known_hosts 2>/dev/null || true";
@@ -335,7 +343,7 @@ class DeploySharedCommand extends BaseHostingerCommand
                 break;
             case 'delete_and_clone_direct':
                 // Replace existing - delete everything and clone
-                $commands[] = "rm -rf * .[^.]* 2>/dev/null || true";
+                $commands[] = 'rm -rf * .[^.]* 2>/dev/null || true';
                 $commands[] = "git clone {$repoUrl} .";
                 break;
             case 'skip':
@@ -352,25 +360,24 @@ class DeploySharedCommand extends BaseHostingerCommand
         $commands[] = "composer install {$composerFlags}";
 
         // Copy .env.example to .env
-        $commands[] = "if [ -f .env.example ]; then cp .env.example .env; fi";
+        $commands[] = 'if [ -f .env.example ]; then cp .env.example .env; fi';
 
         // Create symbolic link for Laravel public folder
-        $commands[] = "if [ -d public ]; then ln -s public public_html; fi";
+        $commands[] = 'if [ -d public ]; then ln -s public public_html; fi';
 
         // Laravel setup
-        $commands[] = "php artisan key:generate --quiet";
+        $commands[] = 'php artisan key:generate --quiet';
 
         if (config('hostinger-deploy.deployment.run_migrations', true)) {
             $commands[] = "echo 'yes' | php artisan migrate --quiet";
         }
 
         if (config('hostinger-deploy.deployment.run_storage_link', true)) {
-            $commands[] = "php artisan storage:link --quiet";
+            $commands[] = 'php artisan storage:link --quiet';
         }
 
         return $commands;
     }
-
 
     /**
      * Handle git authentication error by displaying public key and instructions.
@@ -383,8 +390,8 @@ class DeploySharedCommand extends BaseHostingerCommand
 
         // Get public key from server
         $publicKey = $this->ssh->getPublicKey();
-        
-        if (!$publicKey) {
+
+        if (! $publicKey) {
             $this->error('❌ Could not retrieve public key from server. Generating new key...');
             if ($this->ssh->generateSshKey()) {
                 $publicKey = $this->ssh->getPublicKey();
@@ -394,7 +401,7 @@ class DeploySharedCommand extends BaseHostingerCommand
         if ($publicKey) {
             // Get repository information
             $repoInfo = $this->github->parseRepositoryUrl($repoUrl);
-            
+
             // Check if deploy key already exists (via API if available)
             $keyExists = false;
             if ($this->githubAPI && $repoInfo) {
@@ -407,9 +414,10 @@ class DeploySharedCommand extends BaseHostingerCommand
                         try {
                             $commands = $this->buildDeploymentCommands($repoUrl, $siteDir, $cloneChoice);
                             $this->ssh->executeMultiple($commands);
+
                             return true;
                         } catch (\Exception $e) {
-                            $this->warn('⚠️  Deployment still failed: ' . $e->getMessage());
+                            $this->warn('⚠️  Deployment still failed: '.$e->getMessage());
                             // Continue to show the key below
                         }
                     }
@@ -417,9 +425,9 @@ class DeploySharedCommand extends BaseHostingerCommand
                     // If check fails, proceed to show the key
                 }
             }
-            
+
             // If key doesn't exist, try to add via API first
-            if (!$keyExists && $this->githubAPI && $repoInfo) {
+            if (! $keyExists && $this->githubAPI && $repoInfo) {
                 try {
                     $this->info('🔑 Attempting to add deploy key via API...');
                     $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'Hostinger Server', false);
@@ -429,30 +437,31 @@ class DeploySharedCommand extends BaseHostingerCommand
                     try {
                         $commands = $this->buildDeploymentCommands($repoUrl, $siteDir, $cloneChoice);
                         $this->ssh->executeMultiple($commands);
+
                         return true;
                     } catch (\Exception $e) {
-                        $this->warn('⚠️  Deployment still failed: ' . $e->getMessage());
+                        $this->warn('⚠️  Deployment still failed: '.$e->getMessage());
                         // Continue to show manual instructions below
                     }
                 } catch (\Exception $e) {
-                    $this->warn('⚠️  Failed to add deploy key via API: ' . $e->getMessage());
+                    $this->warn('⚠️  Failed to add deploy key via API: '.$e->getMessage());
                     $this->warn('   Falling back to manual method...');
                     $this->line('');
                 }
             }
-            
+
             // Only show deploy key if it doesn't exist and needs to be added manually
-            if (!$keyExists) {
+            if (! $keyExists) {
                 $this->info('📋 Add this SSH public key to your GitHub repository:');
                 $this->line('');
-                
+
                 if ($repoInfo) {
                     $deployKeysUrl = $this->github->getDeployKeysUrl($repoInfo['owner'], $repoInfo['name']);
                     $this->line("   Go to: {$deployKeysUrl}");
                 } else {
-                    $this->line("   Go to: Your repository → Settings → Deploy keys");
+                    $this->line('   Go to: Your repository → Settings → Deploy keys');
                 }
-                
+
                 $this->line('');
                 $this->warn('   Steps:');
                 $this->line('   1. Click "Add deploy key"');
@@ -461,28 +470,28 @@ class DeploySharedCommand extends BaseHostingerCommand
                 $this->line('   4. ✅ Check "Allow write access" (optional, for deployments)');
                 $this->line('   5. Click "Add key"');
                 $this->line('');
-                $this->line('   ' . str_repeat('-', 60));
+                $this->line('   '.str_repeat('-', 60));
                 $this->line($publicKey);
-                $this->line('   ' . str_repeat('-', 60));
+                $this->line('   '.str_repeat('-', 60));
                 $this->line('');
-                
+
                 // Retry loop - keep asking until deployment succeeds or user gives up
                 $maxRetries = 3;
                 $attempt = 0;
-                
+
                 while ($attempt < $maxRetries) {
                     $this->ask('Press ENTER after you have added the deploy key to GitHub to continue...', '');
                     $this->info('🔄 Retrying deployment...');
-                    
+
                     try {
                         $commands = $this->buildDeploymentCommands($repoUrl, $siteDir, $cloneChoice);
                         $this->ssh->executeMultiple($commands);
-                        
+
                         // Success - let main handle method display success message
                         return true;
                     } catch (\Exception $e) {
                         $attempt++;
-                        
+
                         // Check if it's still an authentication error
                         if ($this->isGitAuthenticationError($e) && $attempt < $maxRetries) {
                             $this->line('');
@@ -495,10 +504,11 @@ class DeploySharedCommand extends BaseHostingerCommand
                             $this->line('');
                             $this->info('📋 Here is your public key again:');
                             $this->line('');
-                            $this->line('   ' . str_repeat('-', 60));
+                            $this->line('   '.str_repeat('-', 60));
                             $this->line($publicKey);
-                            $this->line('   ' . str_repeat('-', 60));
+                            $this->line('   '.str_repeat('-', 60));
                             $this->line('');
+
                             continue;
                         } else {
                             // Not an auth error or max retries reached
@@ -506,7 +516,7 @@ class DeploySharedCommand extends BaseHostingerCommand
                         }
                     }
                 }
-                
+
                 return false;
             } else {
                 // Key already exists but deployment still failed - show error
@@ -514,6 +524,7 @@ class DeploySharedCommand extends BaseHostingerCommand
             }
         } else {
             $this->error('❌ Could not retrieve or generate SSH public key.');
+
             return false;
         }
     }
@@ -524,14 +535,14 @@ class DeploySharedCommand extends BaseHostingerCommand
     protected function handleDeploymentFailure(\Exception $e, string $repoUrl, bool $maxRetriesReached): bool
     {
         $this->line('');
-        
+
         $showErrors = $this->option('show-errors');
         $errorMessage = $e->getMessage();
-        
+
         if ($maxRetriesReached) {
             $this->error('❌ Maximum retry attempts reached.');
             $this->line('');
-            
+
             // Show actual error details if show-errors flag is set or if error contains useful info
             if ($showErrors || strpos($errorMessage, 'Error output:') !== false || strpos($errorMessage, 'exit code:') !== false) {
                 $this->warn('📋 Error Details:');
@@ -539,32 +550,32 @@ class DeploySharedCommand extends BaseHostingerCommand
                 $errorLines = explode("\n", $errorMessage);
                 foreach ($errorLines as $line) {
                     if (strpos($line, 'exit code:') !== false || strpos($line, 'Error output:') !== false) {
-                        $this->line('   ⚠️  ' . $line);
+                        $this->line('   ⚠️  '.$line);
                     } else {
-                        $this->line('   ' . $line);
+                        $this->line('   '.$line);
                     }
                 }
                 $this->line('');
             }
-            
+
             $this->warn('💡 Please check:');
             $this->line('   1. The deploy key has been added correctly to GitHub');
-            $this->line('   2. The repository URL is correct: ' . $repoUrl);
+            $this->line('   2. The repository URL is correct: '.$repoUrl);
             $this->line('   3. You have access to the repository');
             $this->line('   4. The deploy key has write access (if needed)');
             $this->line('');
-            
-            if (!$showErrors) {
+
+            if (! $showErrors) {
                 $this->info('💡 Tip: Run with --show-errors flag to see detailed error messages.');
                 $this->line('');
             }
-            
+
             $this->info('🔧 You can try running the command again after fixing the issue.');
         } else {
             // Not an authentication error - show general deployment failure
             $this->error('❌ Deployment failed.');
             $this->line('');
-            
+
             // Show actual error details if show-errors flag is set or if error contains useful info
             if ($showErrors || strpos($errorMessage, 'Error output:') !== false || strpos($errorMessage, 'exit code:') !== false) {
                 $this->warn('📋 Error Details:');
@@ -572,29 +583,29 @@ class DeploySharedCommand extends BaseHostingerCommand
                 $errorLines = explode("\n", $errorMessage);
                 foreach ($errorLines as $line) {
                     if (strpos($line, 'exit code:') !== false || strpos($line, 'Error output:') !== false) {
-                        $this->line('   ⚠️  ' . $line);
+                        $this->line('   ⚠️  '.$line);
                     } else {
-                        $this->line('   ' . $line);
+                        $this->line('   '.$line);
                     }
                 }
                 $this->line('');
             }
-            
+
             $this->warn('💡 This might be due to:');
             $this->line('   1. Server connection issues');
             $this->line('   2. Repository access problems');
             $this->line('   3. Missing dependencies on the server');
             $this->line('   4. Command execution failures (composer, git, etc.)');
             $this->line('');
-            
-            if (!$showErrors) {
+
+            if (! $showErrors) {
                 $this->info('💡 Tip: Run with --show-errors flag to see detailed error messages.');
                 $this->line('');
             }
-            
+
             $this->info('🔧 Please check your server configuration and try again.');
         }
-        
+
         return false;
     }
 
@@ -607,12 +618,12 @@ class DeploySharedCommand extends BaseHostingerCommand
         if (preg_match('/git@([^:]+):/', $repoUrl, $matches)) {
             return $matches[1];
         }
-        
+
         // Handle HTTPS URLs: https://github.com/owner/repo.git or https://gitlab.com/owner/repo.git
         if (preg_match('/https?:\/\/([^\/]+)/', $repoUrl, $matches)) {
             return $matches[1];
         }
-        
+
         return null;
     }
 
@@ -622,8 +633,8 @@ class DeploySharedCommand extends BaseHostingerCommand
     protected function buildFrontendAssets(): void
     {
         $packageJsonPath = base_path('package.json');
-        
-        if (!file_exists($packageJsonPath)) {
+
+        if (! file_exists($packageJsonPath)) {
             return;
         }
 
@@ -632,20 +643,22 @@ class DeploySharedCommand extends BaseHostingerCommand
         try {
             // Check if npm is available
             $npmCheck = \Illuminate\Support\Facades\Process::run('which npm');
-            if (!$npmCheck->successful()) {
+            if (! $npmCheck->successful()) {
                 $this->warn('⚠️  npm not found. Skipping asset build.');
+
                 return;
             }
 
             // Install dependencies if node_modules doesn't exist
-            if (!is_dir(base_path('node_modules'))) {
+            if (! is_dir(base_path('node_modules'))) {
                 $this->info('📥 Installing npm dependencies...');
                 $installProcess = \Illuminate\Support\Facades\Process::path(base_path())
                     ->timeout(300)
                     ->run('npm install');
-                
-                if (!$installProcess->successful()) {
-                    $this->warn('⚠️  Failed to install npm dependencies: ' . $installProcess->errorOutput());
+
+                if (! $installProcess->successful()) {
+                    $this->warn('⚠️  Failed to install npm dependencies: '.$installProcess->errorOutput());
+
                     return;
                 }
             }
@@ -655,16 +668,17 @@ class DeploySharedCommand extends BaseHostingerCommand
             $buildProcess = \Illuminate\Support\Facades\Process::path(base_path())
                 ->timeout(300)
                 ->run('npm run build');
-            
-            if (!$buildProcess->successful()) {
-                $this->warn('⚠️  npm run build failed: ' . $buildProcess->errorOutput());
+
+            if (! $buildProcess->successful()) {
+                $this->warn('⚠️  npm run build failed: '.$buildProcess->errorOutput());
                 $this->warn('   Continuing deployment without built assets...');
+
                 return;
             }
 
             $this->info('✅ Frontend assets built successfully');
         } catch (\Exception $e) {
-            $this->warn('⚠️  Error building frontend assets: ' . $e->getMessage());
+            $this->warn('⚠️  Error building frontend assets: '.$e->getMessage());
             $this->warn('   Continuing deployment without built assets...');
         }
     }
@@ -675,8 +689,8 @@ class DeploySharedCommand extends BaseHostingerCommand
     protected function copyBuiltAssetsToServer(): void
     {
         $buildPath = base_path('public/build');
-        
-        if (!is_dir($buildPath)) {
+
+        if (! is_dir($buildPath)) {
             return;
         }
 
@@ -704,14 +718,15 @@ class DeploySharedCommand extends BaseHostingerCommand
 
             $rsyncProcess = \Illuminate\Support\Facades\Process::timeout(60)->run($rsyncCommand);
 
-            if (!$rsyncProcess->successful()) {
-                $this->warn('⚠️  Failed to copy built assets: ' . $rsyncProcess->errorOutput());
+            if (! $rsyncProcess->successful()) {
+                $this->warn('⚠️  Failed to copy built assets: '.$rsyncProcess->errorOutput());
+
                 return;
             }
 
             $this->info('✅ Built assets copied to server successfully');
         } catch (\Exception $e) {
-            $this->warn('⚠️  Error copying built assets: ' . $e->getMessage());
+            $this->warn('⚠️  Error copying built assets: '.$e->getMessage());
         }
     }
 }

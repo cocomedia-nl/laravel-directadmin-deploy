@@ -1,15 +1,18 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Services;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Services;
 
-use Illuminate\Support\Facades\Process;
 use Illuminate\Process\Exceptions\ProcessFailedException;
+use Illuminate\Support\Facades\Process;
 
 class SshConnectionService
 {
     protected string $host;
+
     protected string $username;
+
     protected int $port;
+
     protected int $timeout;
 
     public function __construct(string $host, string $username, int $port = 22, int $timeout = 30)
@@ -26,45 +29,45 @@ class SshConnectionService
     public function execute(string $command): string
     {
         $sshCommand = $this->buildSshCommand($command);
-        
+
         try {
             $result = Process::timeout($this->timeout)
                 ->run($sshCommand);
-            
-            if (!$result->successful()) {
+
+            if (! $result->successful()) {
                 // Build detailed error message with error output and exit code
                 $errorOutput = $result->errorOutput();
                 $exitCode = $result->exitCode();
                 $output = $result->output();
-                
-                $errorMessage = "SSH command failed";
+
+                $errorMessage = 'SSH command failed';
                 if ($exitCode !== null) {
                     $errorMessage .= " (exit code: {$exitCode})";
                 }
-                $errorMessage .= ": Command exited with non-zero status";
-                
+                $errorMessage .= ': Command exited with non-zero status';
+
                 // Include error output if available
-                if (!empty(trim($errorOutput))) {
-                    $errorMessage .= "\nError output: " . trim($errorOutput);
+                if (! empty(trim($errorOutput))) {
+                    $errorMessage .= "\nError output: ".trim($errorOutput);
                 }
-                
+
                 // Include regular output if it contains useful info and is different from error output
-                if (!empty(trim($output)) && trim($errorOutput) !== trim($output)) {
-                    $errorMessage .= "\nOutput: " . trim($output);
+                if (! empty(trim($output)) && trim($errorOutput) !== trim($output)) {
+                    $errorMessage .= "\nOutput: ".trim($output);
                 }
-                
+
                 throw new \Exception($errorMessage);
             }
-            
+
             return $result->output();
         } catch (\Exception $e) {
             // If it's already our formatted exception, re-throw it
             if (strpos($e->getMessage(), 'SSH command failed') === 0) {
                 throw $e;
             }
-            
+
             // For other exceptions (like ProcessFailedException), preserve the message
-            throw new \Exception("SSH command failed: " . $e->getMessage(), 0, $e);
+            throw new \Exception('SSH command failed: '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -74,6 +77,7 @@ class SshConnectionService
     public function executeMultiple(array $commands): string
     {
         $combinedCommand = implode(' && ', $commands);
+
         return $this->execute($combinedCommand);
     }
 
@@ -84,6 +88,7 @@ class SshConnectionService
     {
         try {
             $this->execute('echo "SSH connection test successful"');
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -121,6 +126,7 @@ class SshConnectionService
     {
         try {
             $this->execute('ssh-keygen -t rsa -b 4096 -C "github-deploy-key" -N "" -f ~/.ssh/id_rsa');
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -135,7 +141,7 @@ class SshConnectionService
         try {
             // Check if the key already exists in authorized_keys
             $keyExists = $this->keyExistsInAuthorizedKeys($publicKey);
-            
+
             if ($keyExists) {
                 // Key already exists, don't add it again
                 return true;
@@ -143,6 +149,7 @@ class SshConnectionService
 
             // Key doesn't exist, add it
             $this->execute("echo '{$publicKey}' >> ~/.ssh/authorized_keys");
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -160,15 +167,15 @@ class SshConnectionService
             if (count($keyParts) < 2) {
                 return false;
             }
-            
+
             $keyData = $keyParts[1]; // The actual key data (middle part)
-            
+
             // Check if this key data exists in authorized_keys
             // Use grep with escaped key data to avoid special character issues
             $escapedKeyData = escapeshellarg($keyData);
             $command = "grep -Fq {$escapedKeyData} ~/.ssh/authorized_keys 2>/dev/null && echo 'exists' || echo 'not_exists'";
             $result = trim($this->execute($command));
-            
+
             return $result === 'exists';
         } catch (\Exception $e) {
             // If we can't check, assume it doesn't exist
@@ -183,6 +190,7 @@ class SshConnectionService
     {
         try {
             $result = $this->execute('test -f ~/.ssh/id_rsa && echo "exists" || echo "not_exists"');
+
             return trim($result) === 'exists';
         } catch (\Exception $e) {
             return false;
@@ -196,8 +204,8 @@ class SshConnectionService
     protected function buildSshCommand(string $command): string
     {
         $sshOptions = [
-            '-p ' . $this->port,
-            '-o ConnectTimeout=' . $this->timeout,
+            '-p '.$this->port,
+            '-o ConnectTimeout='.$this->timeout,
             '-o StrictHostKeyChecking=no',
             '-o UserKnownHostsFile=/dev/null',
         ];
@@ -205,8 +213,8 @@ class SshConnectionService
         // Use proper escaping for SSH command execution
         // Escape the command properly for the shell
         $escapedCommand = escapeshellarg($command);
-        $sshCommand = 'ssh ' . implode(' ', $sshOptions) . ' ' . $this->username . '@' . $this->host . ' ' . $escapedCommand;
-        
+        $sshCommand = 'ssh '.implode(' ', $sshOptions).' '.$this->username.'@'.$this->host.' '.$escapedCommand;
+
         return $sshCommand;
     }
 
@@ -218,6 +226,7 @@ class SshConnectionService
         try {
             // Path is escaped by buildSshCommand, so use single quotes inside
             $result = $this->execute("test -d '{$path}' && echo 'exists' || echo 'not_exists'");
+
             return trim($result) === 'exists';
         } catch (\Exception $e) {
             return false;
@@ -232,6 +241,7 @@ class SshConnectionService
         try {
             // Path is escaped by buildSshCommand, so use single quotes inside
             $result = $this->execute("test -f '{$path}' && echo 'exists' || echo 'not_exists'");
+
             return trim($result) === 'exists';
         } catch (\Exception $e) {
             return false;
@@ -246,6 +256,7 @@ class SshConnectionService
         try {
             // Path is escaped by buildSshCommand, so use single quotes inside
             $result = $this->execute("test -d '{$path}' && [ -z \"\$(ls -A '{$path}' 2>/dev/null)\" ] && echo 'empty' || echo 'not_empty'");
+
             return trim($result) === 'empty';
         } catch (\Exception $e) {
             return false;
@@ -257,7 +268,8 @@ class SshConnectionService
      */
     public function executeInDirectory(string $path, string $command): string
     {
-        $fullCommand = "cd " . escapeshellarg($path) . " && " . $command;
+        $fullCommand = 'cd '.escapeshellarg($path).' && '.$command;
+
         return $this->execute($fullCommand);
     }
 

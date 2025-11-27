@@ -2,11 +2,11 @@
     "name": "erwinliemburg/laravel-directadmin-deploy",
     "description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
     "type": "library",
-    "version": "dev-master",
+    "version": "dev-main",
     "license": "MIT",
     "keywords": [
         "laravel",
-        "hostinger",
+        "directadmin",
         "deployment",
         "github-actions",
         "ssh"

@@ -1,15 +1,15 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Commands;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
 
 use Illuminate\Support\Facades\File;
 
-class PublishWorkflowCommand extends BaseHostingerCommand
+class PublishWorkflowCommand extends BaseDirectAdminCommand
 {
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'hostinger:publish-workflow 
+    protected $signature = 'directadmin:publish-workflow 
                             {--branch= : Override default branch}
                             {--php-version= : Override PHP version}';
 
@@ -25,15 +25,16 @@ class PublishWorkflowCommand extends BaseHostingerCommand
     {
         // Check if we're in a Git repository
         $repoInfo = $this->getRepositoryInfo();
-        if (!$repoInfo) {
+        if (! $repoInfo) {
             $this->error('❌ Not in a Git repository or could not detect repository information. Please run this command from a Git repository.');
+
             return self::FAILURE;
         }
 
         // Get configuration
-        $branch = $this->option('branch') ?: $this->github->getCurrentBranch() ?: config('hostinger-deploy.github.default_branch', 'main');
-        $phpVersion = $this->option('php-version') ?: config('hostinger-deploy.github.php_version', '8.3');
-        $workflowFile = config('hostinger-deploy.github.workflow_file', '.github/workflows/hostinger-deploy.yml');
+        $branch = $this->option('branch') ?: $this->github->getCurrentBranch() ?: config('directadmin-deploy.github.default_branch', 'main');
+        $phpVersion = $this->option('php-version') ?: config('directadmin-deploy.github.php_version', '8.3');
+        $workflowFile = config('directadmin-deploy.github.workflow_file', '.github/workflows/directadmin-deploy.yml');
 
         // Check if file already exists
         if (File::exists($workflowFile)) {
@@ -45,13 +46,14 @@ class PublishWorkflowCommand extends BaseHostingerCommand
 
             if ($choice === 'Skip') {
                 $this->info('⚠️  Skipping workflow file creation.');
+
                 return self::SUCCESS;
             }
         }
 
         // Create .github/workflows directory if it doesn't exist
         $workflowDir = dirname($workflowFile);
-        if (!File::exists($workflowDir)) {
+        if (! File::exists($workflowDir)) {
             File::makeDirectory($workflowDir, 0755, true);
         }
 
@@ -63,11 +65,10 @@ class PublishWorkflowCommand extends BaseHostingerCommand
             $this->info("✅ Workflow file published: {$workflowFile}");
         } else {
             $this->error("❌ Failed to create workflow file: {$workflowFile}");
+
             return self::FAILURE;
         }
 
         return self::SUCCESS;
     }
-
-
 }

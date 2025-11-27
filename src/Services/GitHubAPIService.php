@@ -1,20 +1,21 @@
 <?php
 
-namespace TheCodeholic\LaravelHostingerDeploy\Services;
+namespace ErwinLiemburg\LaravelDirectAdminDeploy\Services;
 
-use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Support\Facades\Http;
 
 class GitHubAPIService
 {
     protected string $token;
+
     protected string $baseUrl = 'https://api.github.com';
 
     public function __construct(?string $token = null)
     {
-        $this->token = $token ?: config('hostinger-deploy.github.api_token') ?: env('GITHUB_API_TOKEN');
-        
-        if (!$this->token) {
+        $this->token = $token ?: config('directadmin-deploy.github.api_token') ?: env('GITHUB_API_TOKEN');
+
+        if (! $this->token) {
             throw new Exception('GitHub API token is required. Set GITHUB_API_TOKEN in your .env file.');
         }
     }
@@ -30,8 +31,8 @@ class GitHubAPIService
             'X-GitHub-Api-Version' => '2022-11-28',
         ])->get("{$this->baseUrl}/repos/{$owner}/{$repo}/actions/secrets/public-key");
 
-        if (!$response->successful()) {
-            throw new Exception("Failed to get repository public key: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception('Failed to get repository public key: '.$response->body());
         }
 
         return $response->json();
@@ -43,13 +44,13 @@ class GitHubAPIService
      */
     public function encryptSecret(string $plaintext, string $publicKey, string $keyId): array
     {
-        if (!extension_loaded('sodium')) {
+        if (! extension_loaded('sodium')) {
             throw new Exception('LibSodium extension is required for encrypting secrets. Install php-sodium extension.');
         }
 
         // Decode the base64 public key
         $publicKeyBinary = base64_decode($publicKey, true);
-        
+
         if ($publicKeyBinary === false) {
             throw new Exception('Failed to decode public key');
         }
@@ -57,7 +58,7 @@ class GitHubAPIService
         // GitHub uses NaCl Box sealed encryption (anonymous encryption)
         // This automatically handles ephemeral key pair generation
         $encrypted = sodium_crypto_box_seal($plaintext, $publicKeyBinary);
-        
+
         if ($encrypted === false) {
             throw new Exception('Failed to encrypt secret');
         }
@@ -95,8 +96,8 @@ class GitHubAPIService
             $encryptedData
         );
 
-        if (!$response->successful()) {
-            throw new Exception("Failed to create/update secret {$secretName}: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception("Failed to create/update secret {$secretName}: ".$response->body());
         }
 
         return true;
@@ -115,7 +116,7 @@ class GitHubAPIService
         ])->get("{$this->baseUrl}/repos/{$owner}/{$repo}/actions/variables/{$variableName}");
 
         $method = $existingResponse->successful() ? 'PATCH' : 'POST';
-        $url = "{$this->baseUrl}/repos/{$owner}/{$repo}/actions/variables" . 
+        $url = "{$this->baseUrl}/repos/{$owner}/{$repo}/actions/variables".
                ($method === 'PATCH' ? "/{$variableName}" : '');
 
         $response = Http::withHeaders([
@@ -127,8 +128,8 @@ class GitHubAPIService
             'value' => $value,
         ]);
 
-        if (!$response->successful()) {
-            throw new Exception("Failed to create/update variable {$variableName}: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception("Failed to create/update variable {$variableName}: ".$response->body());
         }
 
         return true;
@@ -145,8 +146,8 @@ class GitHubAPIService
             'X-GitHub-Api-Version' => '2022-11-28',
         ])->get("{$this->baseUrl}/repos/{$owner}/{$repo}/keys");
 
-        if (!$response->successful()) {
-            throw new Exception("Failed to get deploy keys: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception('Failed to get deploy keys: '.$response->body());
         }
 
         return $response->json();
@@ -159,16 +160,17 @@ class GitHubAPIService
     {
         try {
             $keys = $this->getDeployKeys($owner, $repo);
-            
+
             // Extract the key part from the public key (remove comment, whitespace, etc.)
-            $normalizeKey = function($key) {
+            $normalizeKey = function ($key) {
                 // Remove comment part and normalize whitespace
                 $parts = explode(' ', trim($key));
-                return isset($parts[1]) ? $parts[0] . ' ' . $parts[1] : $key;
+
+                return isset($parts[1]) ? $parts[0].' '.$parts[1] : $key;
             };
-            
+
             $normalizedTargetKey = $normalizeKey($publicKey);
-            
+
             foreach ($keys as $key) {
                 if (isset($key['key'])) {
                     $normalizedExistingKey = $normalizeKey($key['key']);
@@ -177,7 +179,7 @@ class GitHubAPIService
                     }
                 }
             }
-            
+
             return false;
         } catch (Exception $e) {
             // If we can't check, assume it doesn't exist
@@ -187,19 +189,19 @@ class GitHubAPIService
 
     /**
      * Create a deploy key for a repository.
-     * 
-     * @param string $owner Repository owner
-     * @param string $repo Repository name
-     * @param string $publicKey The public SSH key
-     * @param string $title Optional title for the deploy key (default: "Hostinger Server")
-     * @param bool $readOnly Whether the key should be read-only (default: false)
+     *
+     * @param  string  $owner  Repository owner
+     * @param  string  $repo  Repository name
+     * @param  string  $publicKey  The public SSH key
+     * @param  string  $title  Optional title for the deploy key (default: "DirectAdmin Server")
+     * @param  bool  $readOnly  Whether the key should be read-only (default: false)
      * @return array The created deploy key data
      */
-    public function createDeployKey(string $owner, string $repo, string $publicKey, string $title = 'Hostinger Server', bool $readOnly = false): array
+    public function createDeployKey(string $owner, string $repo, string $publicKey, string $title = 'DirectAdmin Server', bool $readOnly = false): array
     {
         // Check if key already exists
         if ($this->keyExists($owner, $repo, $publicKey)) {
-            throw new Exception("Deploy key already exists for this repository");
+            throw new Exception('Deploy key already exists for this repository');
         }
 
         $response = Http::withHeaders([
@@ -215,8 +217,8 @@ class GitHubAPIService
             ]
         );
 
-        if (!$response->successful()) {
-            throw new Exception("Failed to create deploy key: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception('Failed to create deploy key: '.$response->body());
         }
 
         return $response->json();
@@ -233,8 +235,8 @@ class GitHubAPIService
             'X-GitHub-Api-Version' => '2022-11-28',
         ])->delete("{$this->baseUrl}/repos/{$owner}/{$repo}/keys/{$keyId}");
 
-        if (!$response->successful()) {
-            throw new Exception("Failed to delete deploy key: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception('Failed to delete deploy key: '.$response->body());
         }
 
         return true;
