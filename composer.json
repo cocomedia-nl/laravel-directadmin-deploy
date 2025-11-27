@@ -1,53 +1,53 @@
 {
-    "name": "erwinliemburg/laravel-directadmin-deploy",
-    "description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
-    "type": "library",
-    "version": "dev-main",
-    "license": "MIT",
-    "keywords": [
-        "laravel",
-        "directadmin",
-        "deployment",
-        "github-actions",
-        "ssh"
-    ],
-    "authors": [
-        {
-            "name": "Erwin Liemburg",
-            "email": "erwin@cocomedia.n"
-        }
-    ],
-    "require": {
-        "php": "^8.2",
-        "illuminate/support": "^11.0|^12.0",
-        "illuminate/console": "^11.0|^12.0",
-        "illuminate/process": "^11.0|^12.0",
-        "symfony/console": "^7.0"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^10.0",
-        "orchestra/testbench": "^8.0|^9.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "ErwinLiemburg\\LaravelDirectAdminDeploy\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "ErwinLiemburg\\LaravelDirectAdminDeploy\\Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "ErwinLiemburg\\LaravelDirectAdminDeploy\\DirectAdminDeployServiceProvider"
-            ]
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
-    "config": {
-        "sort-packages": true
-    }
+	"name": "erwinliemburg/laravel-directadmin-deploy",
+	"description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
+	"type": "library",
+	"version": "0.1.0",
+	"license": "MIT",
+	"keywords": [
+		"laravel",
+		"directadmin",
+		"deployment",
+		"github-actions",
+		"ssh"
+	],
+	"authors": [
+		{
+			"name": "Erwin Liemburg",
+			"email": "erwin@cocomedia.n"
+		}
+	],
+	"require": {
+		"php": "^8.2",
+		"illuminate/support": "^11.0|^12.0",
+		"illuminate/console": "^11.0|^12.0",
+		"illuminate/process": "^11.0|^12.0",
+		"symfony/console": "^7.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^10.0",
+		"orchestra/testbench": "^8.0|^9.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"ErwinLiemburg\\LaravelDirectAdminDeploy\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"ErwinLiemburg\\LaravelDirectAdminDeploy\\Tests\\": "tests/"
+		}
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"ErwinLiemburg\\LaravelDirectAdminDeploy\\DirectAdminDeployServiceProvider"
+			]
+		}
+	},
+	"minimum-stability": "stable",
+	"prefer-stable": true,
+	"config": {
+		"sort-packages": true
+	}
 }
