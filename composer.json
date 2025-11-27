@@ -1,8 +1,8 @@
 {
-    "name": "thecodeholic/laravel-hostinger-deploy",
-    "description": "Laravel package for automated Hostinger deployment with GitHub Actions support",
+    "name": "ErwinLiemburg/laravel-directadmin-deploy",
+    "description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
     "type": "library",
-    "version": "0.4.0",
+    "version": "0.1.0",
     "license": "MIT",
     "keywords": [
         "laravel",
@@ -13,8 +13,8 @@
     ],
     "authors": [
         {
-            "name": "Zura Sekhniashvili",
-            "email": "zura@thecodeholic.com"
+            "name": "Erwin Liemburg",
+            "email": "erwin@cocomedia.n"
         }
     ],
     "require": {
@@ -30,18 +30,18 @@
     },
     "autoload": {
         "psr-4": {
-            "TheCodeholic\\LaravelHostingerDeploy\\": "src/"
+            "ErwinLiemburg\\LaravelDirectAdminDeploy\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "TheCodeholic\\LaravelHostingerDeploy\\Tests\\": "tests/"
+            "ErwinLiemburg\\LaravelDirectAdminDeploy\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "TheCodeholic\\LaravelHostingerDeploy\\HostingerDeployServiceProvider"
+                "ErwinLiemburg\\LaravelDirectAdminDeploy\\DirectAdminDeployServiceProvider"
             ]
         }
     },
