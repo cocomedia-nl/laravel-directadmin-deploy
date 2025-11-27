@@ -708,9 +708,9 @@ class DeploySharedCommand extends BaseDirectAdminCommand
             $remoteBuildPath = "{$absolutePath}/public/build";
 
             // Build rsync command
-            $host = config('hostinger-deploy.ssh.host');
-            $username = config('hostinger-deploy.ssh.username');
-            $port = config('hostinger-deploy.ssh.port', 22);
+            $host = config('directadmin-deploy.ssh.host');
+            $username = config('directadmin-deploy.ssh.username');
+            $port = config('directadmin-deploy.ssh.port', 22);
 
             // Use rsync to copy files
             $rsyncCommand = sprintf(
@@ -730,9 +730,9 @@ class DeploySharedCommand extends BaseDirectAdminCommand
                 return;
             }
 
-            $this->info('✅ Built assets copied to server successfully');
+            $this->info('✅ Built assets copied successfully');
         } catch (\Exception $e) {
-            $this->warn('⚠️  Error copying built assets: '.$e->getMessage());
+            $this->warn('⚠️  Failed to copy built assets: '.$e->getMessage());
         }
     }
 }
