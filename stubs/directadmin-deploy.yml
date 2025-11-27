@@ -35,6 +35,8 @@ jobs:
             - name: Disable path repo
               run: composer config --unset repositories.0
             - name: Install Composer Dependencies
+              env:
+                  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GITHUB_TOKEN }}"}}'
               run: composer install --prefer-dist --no-interaction --no-progress
 
             - name: Generate Application Key
@@ -88,6 +90,8 @@ jobs:
             - name: Disable path repo
               run: composer config --unset repositories.0
             - name: Install Composer Dependencies
+              env:
+                  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GITHUB_TOKEN }}"}}'
               run: composer install --prefer-dist --no-interaction --no-progress
 
             - name: Generate Application Key
@@ -234,7 +238,8 @@ jobs:
                       git reset --hard origin/{{BRANCH}}
 
                       echo "📦 Installing Composer dependencies..."
-                      composer config --unset repositories.0
+                      composer config --unset repositories.0 || true
+                      export COMPOSER_AUTH='{"github-oauth": {"github.com": "${{ secrets.DEPLOY_GITHUB_TOKEN }}"}}'
                       composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
                       # Note: Frontend assets should already be built and committed
