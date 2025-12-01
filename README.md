@@ -9,13 +9,13 @@ Deploy your Laravel application to DirectAdmin shared hosting with automated Git
 Install the package via Composer:
 
 ```bash
-composer require erwinliemburg/laravel-directadmin-deploy:^0.1 --dev
+composer require cocomedia-nl/laravel-directadmin-deploy:^0.1 --dev
 ```
 
 Or install the latest version:
 
 ```bash
-composer require erwinliemburg/laravel-directadmin-deploy --dev
+composer require cocomedia-nl/laravel-directadmin-deploy --dev
 ```
 
 > **Note:** This package should be installed as a development dependency (`--dev`) since it's only needed during deployment, not in production.
