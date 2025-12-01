@@ -1,8 +1,7 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy\Services;
+namespace CocomediaNL\LaravelDirectAdminDeploy\Services;
 
-use Illuminate\Process\Exceptions\ProcessFailedException;
 use Illuminate\Support\Facades\Process;
 
 class SshConnectionService
