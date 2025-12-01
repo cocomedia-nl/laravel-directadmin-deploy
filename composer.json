@@ -1,5 +1,5 @@
 {
-	"name": "erwinliemburg/laravel-directadmin-deploy",
+	"name": "cocomedia-nl/laravel-directadmin-deploy",
 	"description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
 	"type": "library",
 	"version": "0.1.0",
@@ -13,8 +13,8 @@
 	],
 	"authors": [
 		{
-			"name": "Erwin Liemburg",
-			"email": "erwin@cocomedia.n"
+			"name": "Cocomedia",
+			"email": "info@cocomedia.nl"
 		}
 	],
 	"require": {
@@ -30,18 +30,18 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"ErwinLiemburg\\LaravelDirectAdminDeploy\\": "src/"
+			"CocomediaNL\\LaravelDirectAdminDeploy\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"ErwinLiemburg\\LaravelDirectAdminDeploy\\Tests\\": "tests/"
+			"CocomediaNL\\LaravelDirectAdminDeploy\\Tests\\": "tests/"
 		}
 	},
 	"extra": {
 		"laravel": {
 			"providers": [
-				"ErwinLiemburg\\LaravelDirectAdminDeploy\\DirectAdminDeployServiceProvider"
+				"CocomediaNL\\LaravelDirectAdminDeploy\\DirectAdminDeployServiceProvider"
 			]
 		}
 	},
