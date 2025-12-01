@@ -1,10 +1,10 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
+namespace CocomediaNL\LaravelDirectAdminDeploy\Commands;
 
-use ErwinLiemburg\LaravelDirectAdminDeploy\Services\GitHubActionsService;
-use ErwinLiemburg\LaravelDirectAdminDeploy\Services\GitHubAPIService;
-use ErwinLiemburg\LaravelDirectAdminDeploy\Services\SshConnectionService;
+use CocomediaNL\LaravelDirectAdminDeploy\Services\GitHubActionsService;
+use CocomediaNL\LaravelDirectAdminDeploy\Services\GitHubAPIService;
+use CocomediaNL\LaravelDirectAdminDeploy\Services\SshConnectionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
