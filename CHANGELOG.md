@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > **Note:** This package is a fork of [thecodeholic/laravel-hostinger-deploy](https://github.com/thecodeholic/laravel-hostinger-deploy), rebranded and adapted for DirectAdmin shared hosting environments. For historical versions (0.1.0-0.4.0), please refer to the [original repository](https://github.com/thecodeholic/laravel-hostinger-deploy).
 
+## [0.1.3] - 2025-12-01
+
+### Changed
+
+-   Workflow optimizations and improvements
+-   Enhanced deployment process
+
+### Fixed
+
+-   Additional refinements and bug fixes
+
 ## [0.1.2] - 2025-12-01
 
 ### Changed

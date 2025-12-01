@@ -33,8 +33,6 @@ jobs:
                   fi
 
             - name: Install Composer Dependencies
-              env:
-                  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
               run: composer install --prefer-dist --no-interaction --no-progress
 
             - name: Generate Application Key
@@ -86,8 +84,6 @@ jobs:
                   fi
 
             - name: Install Composer Dependencies
-              env:
-                  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
               run: composer install --prefer-dist --no-interaction --no-progress
 
             - name: Generate Application Key
@@ -234,7 +230,6 @@ jobs:
                       git reset --hard origin/{{BRANCH}}
 
                       echo "📦 Installing Composer dependencies..."
-                      export COMPOSER_AUTH='{"github-oauth": {"github.com": "${{ secrets.COMPOSER_GITHUB_TOKEN }}"}}'
                       composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
                       # Note: Frontend assets should already be built and committed
