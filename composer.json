@@ -2,7 +2,7 @@
 	"name": "cocomedia-nl/laravel-directadmin-deploy",
 	"description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
 	"type": "library",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"license": "MIT",
 	"keywords": [
 		"laravel",
