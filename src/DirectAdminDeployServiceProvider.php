@@ -1,12 +1,12 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy;
+namespace CocomediaNL\LaravelDirectAdminDeploy;
 
 use Illuminate\Support\ServiceProvider;
-use ErwinLiemburg\LaravelDirectAdminDeploy\Commands\DeploySharedCommand;
-use ErwinLiemburg\LaravelDirectAdminDeploy\Commands\PublishWorkflowCommand;
-use ErwinLiemburg\LaravelDirectAdminDeploy\Commands\SetupAutomatedDeployCommand;
-use ErwinLiemburg\LaravelDirectAdminDeploy\Commands\DeployAndSetupAutomatedCommand;
+use CocomediaNL\LaravelDirectAdminDeploy\Commands\DeploySharedCommand;
+use CocomediaNL\LaravelDirectAdminDeploy\Commands\PublishWorkflowCommand;
+use CocomediaNL\LaravelDirectAdminDeploy\Commands\SetupAutomatedDeployCommand;
+use CocomediaNL\LaravelDirectAdminDeploy\Commands\DeployAndSetupAutomatedCommand;
 
 class DirectAdminDeployServiceProvider extends ServiceProvider
 {

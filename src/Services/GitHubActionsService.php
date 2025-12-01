@@ -1,6 +1,6 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy\Services;
+namespace CocomediaNL\LaravelDirectAdminDeploy\Services;
 
 use Illuminate\Support\Facades\Process;
 

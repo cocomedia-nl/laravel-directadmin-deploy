@@ -1,6 +1,6 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
+namespace CocomediaNL\LaravelDirectAdminDeploy\Commands;
 
 use Illuminate\Support\Facades\File;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy\Commands;
+namespace CocomediaNL\LaravelDirectAdminDeploy\Commands;
 
 class DeploySharedCommand extends BaseDirectAdminCommand
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace ErwinLiemburg\LaravelDirectAdminDeploy\Services;
+namespace CocomediaNL\LaravelDirectAdminDeploy\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Http;

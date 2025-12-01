@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > **Note:** This package is a fork of [thecodeholic/laravel-hostinger-deploy](https://github.com/thecodeholic/laravel-hostinger-deploy), rebranded and adapted for DirectAdmin shared hosting environments. For historical versions (0.1.0-0.4.0), please refer to the [original repository](https://github.com/thecodeholic/laravel-hostinger-deploy).
 
+## [0.1.1] - 2025-12-01
+
+### Changed
+
+-   Improved code quality and formatting
+-   Enhanced service implementations
+-   Updated command implementations
+
+### Fixed
+
+-   Minor bug fixes and improvements
+
 ## [0.1.0] - 2025-11-27
 
 ### Initial Release
@@ -48,7 +60,7 @@ If you're migrating from `thecodeholic/laravel-hostinger-deploy`:
 
 ```bash
 composer remove thecodeholic/laravel-hostinger-deploy
-composer require erwinliemburg/laravel-directadmin-deploy --dev
+composer require cocomedia-nl/laravel-directadmin-deploy --dev
 ```
 
 2. Update your `.env` file:
