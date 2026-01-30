@@ -23,7 +23,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
      */
     public function handle(): int
     {
-        $this->info('🚀 Starting Hostinger deployment...');
+        $this->info('🚀 Starting DirectAdmin deployment...');
 
         // Validate configuration
         if (! $this->validateConfiguration()) {
