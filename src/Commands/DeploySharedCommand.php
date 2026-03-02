@@ -184,7 +184,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
                         return;
                     }
                     // Try to add the key
-                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'Hostinger Server', false);
+                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'DirectAdmin Server', false);
                 }
             } catch (\Exception $e) {
                 // Silent failure - will be handled if git clone fails
@@ -436,7 +436,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
             if (! $keyExists && $this->githubAPI && $repoInfo) {
                 try {
                     $this->info('🔑 Attempting to add deploy key via API...');
-                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'Hostinger Server', false);
+                    $this->githubAPI->createDeployKey($repoInfo['owner'], $repoInfo['name'], $publicKey, 'DirectAdmin Server', false);
                     $this->info('✅ Deploy key added successfully via API');
                     // Retry deployment
                     $this->info('🔄 Retrying deployment...');
@@ -471,7 +471,7 @@ class DeploySharedCommand extends BaseDirectAdminCommand
                 $this->line('');
                 $this->warn('   Steps:');
                 $this->line('   1. Click "Add deploy key"');
-                $this->line('   2. Give it a title (e.g., "Hostinger Server")');
+                $this->line('   2. Give it a title (e.g., "DirectAdmin Server")');
                 $this->line('   3. Paste the public key below');
                 $this->line('   4. ✅ Check "Allow write access" (optional, for deployments)');
                 $this->line('   5. Click "Add key"');
