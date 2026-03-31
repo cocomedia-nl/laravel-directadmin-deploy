@@ -2,7 +2,7 @@
 	"name": "cocomedia-nl/laravel-directadmin-deploy",
 	"description": "Laravel package for automated DirectAdmin deployment with GitHub Actions support",
 	"type": "library",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"license": "MIT",
 	"keywords": [
 		"laravel",
@@ -19,14 +19,14 @@
 	],
 	"require": {
 		"php": "^8.2",
-		"illuminate/support": "^11.0|^12.0",
-		"illuminate/console": "^11.0|^12.0",
-		"illuminate/process": "^11.0|^12.0",
+		"illuminate/support": "^11.0|^12.0|^13.0",
+		"illuminate/console": "^11.0|^12.0|^13.0",
+		"illuminate/process": "^11.0|^12.0|^13.0",
 		"symfony/console": "^7.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^10.0",
-		"orchestra/testbench": "^8.0|^9.0"
+		"orchestra/testbench": "^8.0|^9.0|^10.0"
 	},
 	"autoload": {
 		"psr-4": {
