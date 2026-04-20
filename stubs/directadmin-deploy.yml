@@ -13,7 +13,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -64,7 +64,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -107,7 +107,7 @@ jobs:
 
             - name: Setup Node.js
               if: steps.check_package.outputs.exists == 'true'
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: '20'
                   cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
@@ -135,7 +135,7 @@ jobs:
 
             - name: Upload Built Assets
               if: steps.check_package.outputs.exists == 'true'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: build-assets
                   path: public/build/
@@ -150,7 +150,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -160,7 +160,7 @@ jobs:
 
             - name: Download Built Assets
               id: download_assets
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v7
               with:
                   name: build-assets
                   path: public/build/
@@ -168,7 +168,7 @@ jobs:
 
             - name: Setup Node.js (for asset building)
               if: steps.download_assets.outcome == 'failure' && hashFiles('package.json') != ''
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: '20'
                   cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
